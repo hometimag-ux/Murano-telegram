@@ -3,8 +3,8 @@
 header('Content-Type: application/json');
 
 // НАСТРОЙКИ (замените на свои)
-$botToken = 'ВАШ_ТОКЕН_БОТА';
-$chatId = 'ВАШ_CHAT_ID';
+$botToken = '8860613107:AAGrlkSV5u5jBKskphwcQVO4AkoHI9xsquk';
+$chatId = 'EllinaTB_bot';
 
 function sendTelegramMessage($message, $botToken, $chatId) {
     $url = "https://api.telegram.org/bot{$botToken}/sendMessage";

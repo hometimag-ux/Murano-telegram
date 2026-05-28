@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>STOCKX | Магазин с чатом</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      transition: background 0.3s ease;
+    }
+
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-primary: #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --border: #e2e8f0;
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+      --glass-bg: rgba(255, 255, 255, 0.95);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.dark {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --border: #334155;
+      --glass-bg: rgba(30, 41, 59, 0.95);
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .nav-icons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 0.5rem;
+      border-radius: 9999px;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-tertiary);
+      transform: scale(1.05);
+    }
+
+    .cart-count {
+      background: var(--accent-gradient);
+      color: white;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      padding: 0.125rem 0.5rem;
+      position: absolute;
+      top: -0.25rem;
+      right: -0.25rem;
+    }
+
+    /* Чат-кнопка */
+    .chat-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      background: var(--accent-gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-xl);
+      z-index: 100;
+      transition: all var(--transition-fast);
+      border: none;
+      font-size: 1.8rem;
+    }
+
+    .chat-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Окно чата */
+    .chat-window {
+      position: fixed;
+      bottom: 5rem;
+      right: 2rem;
+      width: 350px;
+      height: 500px;
+      background: var(--bg-secondary);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      flex-direction: column;
+      z-index: 101;
+      transform: scale(0);
+      opacity: 0;
+      transition: all 0.2s;
+      transform-origin: bottom right;
+      border: 1px solid var(--border);
+    }
+
+    .chat-window.open {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      background: var(--accent-gradient);
+      color: white;
+      border-radius: 1rem 1rem 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .message.user {
+      background: var(--accent-gradient);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 0.25rem;
+    }
+
+    .message.bot {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      align-self: flex-start;
+      border-bottom-left-radius: 0.25rem;
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 0.5rem;
+      gap: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .chat-input button {
+      background: var(--accent-gradient);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 1.5rem;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* Фильтры и товары */
+    .filters {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin: 2rem 0;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1.2rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-btn.active {
+      background: var(--accent-gradient);
+      color: white;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .product-card {
+      background: var(--bg-secondary);
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .product-img {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      background: var(--bg-tertiary);
+    }
+
+    .product-info {
+      padding: 1rem;
+    }
+
+    .product-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 0.5rem 0;
+    }
+
+    .add-to-cart {
+      width: 100%;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 2rem;
+      cursor: pointer;
+    }
+
+    /* Корзина */
+    .cart-sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+      padding: 1.5rem;
+      transition: right 0.3s;
+      border-left: 1px solid var(--border);
+    }
+
+    .cart-sidebar.open {
+      right: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+      z-index: 199;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      background: var(--accent-gradient);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      z-index: 300;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">✨ STOCKX</div>
+    <div class="nav-icons">
+      <button id="themeToggle" class="icon-btn">🌙</button>
+      <button id="cartBtn" class="icon-btn">🛒 <span id="cartCounter" class="cart-count">0</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="filters" id="filtersContainer">
+    <button data-cat="all" class="filter-btn active">Все</button>
+    <button data-cat="одежда" class="filter-btn">Одежда</button>
+    <button data-cat="обувь" class="filter-btn">Обувь</button>
+    <button data-cat="аксессуары" class="filter-btn">Аксессуары</button>
+  </div>
+  <div id="productsGrid" class="products-grid"></div>
+</main>
+
+<!-- Кнопка чата -->
+<button class="chat-btn" id="chatBtn">💬</button>
+
+<!-- Окно чата -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <span>🤖 Поддержка STOCKX</span>
+    <button id="closeChat" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="message bot">👋 Здравствуйте! Я виртуальный помощник STOCKX. Чем могу помочь?<br><br>Напишите:<br>• 🔍 "помощь" - список команд<br>• 📦 "заказ" - статус заказа<br>• 💬 "оператор" - связаться с человеком</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="Напишите сообщение...">
+    <button id="sendChat">➤</button>
+  </div>
+</div>
+
+<!-- Корзина -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3>🛒 Корзина</h3>
+    <button id="closeCart" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">✕</button>
+  </div>
+  <div id="cartItems"></div>
+  <div id="cartTotal" style="font-weight:bold; margin:1rem 0;"></div>
+  <button id="checkoutBtn" class="add-to-cart">💳 Оформить заказ</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<script>
+  // ===== ТОВАРЫ =====
+  const products = [
+    { id: 1, name: "Оверсайз худи", price: 4990, category: "одежда", emoji: "👕" },
+    { id: 2, name: "Кроссовки Air Max", price: 12990, category: "обувь", emoji: "👟" },
+    { id: 3, name: "Минималистичные часы", price: 3990, category: "аксессуары", emoji: "⌚" },
+    { id: 4, name: "Карго штаны", price: 4590, category: "одежда", emoji: "👖" },
+    { id: 5, name: "Рюкзак-шоппер", price: 3290, category: "аксессуары", emoji: "🎒" },
+    { id: 6, name: "Кеды на платформе", price: 8990, category: "обувь", emoji: "👡" }
+  ];
+
+  let cart = [];
+  let currentFilter = "all";
+
+  // ===== TELEGRAM УВЕДОМЛЕНИЕ =====
+  async function sendTelegramNotification(type, data) {
+    try {
+      const response = await fetch('telegram-bot.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, ...data })
+      });
+      return await response.json();
+    } catch (error) {
+      console.log('Telegram уведомление не отправлено (бот не настроен)');
+    }
+  }
+
+  // ===== КОРЗИНА =====
+  function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartUI();
+  }
+
+  function loadCart() {
+    const saved = localStorage.getItem("cart");
+    if (saved) cart = JSON.parse(saved);
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const counter = document.getElementById("cartCounter");
+    const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+    counter.innerText = totalItems;
+
+    const container = document.getElementById("cartItems");
+    const totalSpan = document.getElementById("cartTotal");
+    
+    if (cart.length === 0) {
+      container.innerHTML = "<p style='text-align:center; opacity:0.6;'>Корзина пуста</p>";
+      totalSpan.innerHTML = "";
+      return;
+    }
+    
+    let html = "";
+    let total = 0;
+    cart.forEach(item => {
+      total += item.price * item.quantity;
+      html += `
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding:0.5rem; border-bottom:1px solid var(--border);">
+          <div><strong>${item.name}</strong><br>${item.price} ₽</div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button onclick="updateQty(${item.id}, -1)" style="background:var(--bg-tertiary); border:none; width:28px; border-radius:50%; cursor:pointer;">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQty(${item.id}, 1)" style="background:var(--bg-tertiary); border:none; width:28px; border-radius:50%; cursor:pointer;">+</button>
+            <button onclick="removeFromCart(${item.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+          </div>
+          <div>${item.price * item.quantity} ₽</div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+    totalSpan.innerHTML = `<strong>Итого: ${total.toLocaleString()} ₽</strong>`;
+  }
+
+  window.updateQty = (id, delta) => {
+    const idx = cart.findIndex(i => i.id === id);
+    if (idx !== -1) {
+      cart[idx].quantity += delta;
+      if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+      saveCart();
+    }
+  };
+
+  window.removeFromCart = (id) => {
+    cart = cart.filter(i => i.id !== id);
+    saveCart();
+  };
+
+  function addToCart(product) {
+    const existing = cart.find(i => i.id === product.id);
+    if (existing) existing.quantity++;
+    else cart.push({ ...product, quantity: 1 });
+    saveCart();
+    showToast(`${product.name} добавлен в корзину!`);
+  }
+
+  async function checkout() {
+    if (cart.length === 0) {
+      showToast("Корзина пуста");
+      return;
+    }
+    
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const orderId = "ORD" + Date.now();
+    
+    // Отправляем уведомление в Telegram
+    await sendTelegramNotification('order', {
+      orderId: orderId,
+      amount: total,
+      items: cart,
+      delivery: { name: "Курьерская", price: 350 },
+      address: "г. Москва, ул. Примерная, д.1"
+    });
+    
+    showToast(`✅ Заказ ${orderId} оформлен! Уведомление отправлено в Telegram`);
+    cart = [];
+    saveCart();
+    closeCartSidebar();
+  }
+
+  // ===== ЧАТ =====
+  function addMessage(text, isUser = true) {
+    const container = document.getElementById("chatMessages");
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+    msgDiv.innerText = text;
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function sendToBot(message) {
+    const msg = message.toLowerCase();
+    addMessage(message, true);
+    
+    // Простые ответы бота
+    if (msg.includes("помощь") || msg.includes("команды")) {
+      setTimeout(() => addMessage("📋 Доступные команды:\n• заказ - статус заказа\n• доставка - сроки\n• возврат - условия\n• оператор - связаться с поддержкой\n• товары - ассортимент", false), 500);
+    } 
+    else if (msg.includes("заказ")) {
+      setTimeout(() => addMessage("📦 Для проверки статуса заказа, пожалуйста, напишите номер заказа. Обычно доставка занимает 2-5 дней.", false), 500);
+    }
+    else if (msg.includes("доставк")) {
+      setTimeout(() => addMessage("🚚 Доставка по Москве - 1-2 дня, по России - 3-7 дней. Стоимость от 350 ₽.", false), 500);
+    }
+    else if (msg.includes("возврат")) {
+      setTimeout(() => addMessage("🔄 Вернуть товар можно в течение 14 дней. Сохраните упаковку и чек.", false), 500);
+    }
+    else if (msg.includes("оператор")) {
+      setTimeout(() => addMessage("💬 Сейчас все операторы заняты. Оставьте ваш номер телефона, и мы перезвоним в течение 15 минут.", false), 500);
+      setTimeout(() => {
+        addMessage("📞 Или напишите нам на support@stockx.ru — ответим за 2 часа.", false);
+        sendTelegramNotification('feedback', {
+          name: "Чат-бот",
+          email: "chat@stockx.ru",
+          topic: "Связь с оператором",
+          rating: 5,
+          message: "Пользователь запросил оператора в чате"
+        });
+      }, 1500);
+    }
+    else if (msg.includes("товар")) {
+      setTimeout(() => addMessage("🛍️ В нашем ассортименте: худи, кроссовки, штаны, аксессуары. Загляните в каталог!", false), 500);
+    }
+    else {
+      setTimeout(() => addMessage("Спасибо за сообщение! Наши специалисты ответят вам в ближайшее время. Если нужна помощь — напишите 'помощь' 😊", false), 500);
+    }
+  }
+
+  // ===== UI =====
+  function showToast(msg) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function openCartSidebar() {
+    document.getElementById("cartSidebar").classList.add("open");
+    document.getElementById("overlay").classList.add("active");
+  }
+  function closeCartSidebar() {
+    document.getElementById("cartSidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("active");
+  }
+
+  // ===== ОТРИСОВКА ТОВАРОВ =====
+  function renderProducts() {
+    const grid = document.getElementById("productsGrid");
+    let filtered = currentFilter === "all" ? products : products.filter(p => p.category === currentFilter);
+    
+    grid.innerHTML = filtered.map(prod => `
+      <div class="product-card">
+        <div class="product-img">${prod.emoji}</div>
+        <div class="product-info">
+          <div class="product-title">${prod.name}</div>
+          <div class="product-price">${prod.price.toLocaleString()} ₽</div>
+          <button class="add-to-cart" data-id="${prod.id}">В корзину</button>
+        </div>
+      </div>
+    `).join('');
+    
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.dataset.id);
+        addToCart(products.find(p => p.id === id));
+      });
+    });
+  }
+
+  // ===== ИНИЦИАЛИЗАЦИЯ =====
+  function init() {
+    loadCart();
+    renderProducts();
+    
+    // Тема
+    const themeBtn = document.getElementById("themeToggle");
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+    
+    // Корзина
+    document.getElementById("cartBtn").addEventListener("click", openCartSidebar);
+    document.getElementById("closeCart").addEventListener("click", closeCartSidebar);
+    document.getElementById("overlay").addEventListener("click", () => {
+      closeCartSidebar();
+      closeChat();
+    });
+    document.getElementById("checkoutBtn").addEventListener("click", checkout);
+    
+    // Фильтры
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.cat;
+        renderProducts();
+      });
+    });
+    
+    // Чат
+    const chatBtn = document.getElementById("chatBtn");
+    const chatWindow = document.getElementById("chatWindow");
+    const closeChat = document.getElementById("closeChat");
+    const sendChat = document.getElementById("sendChat");
+    const chatInput = document.getElementById("chatInput");
+    
+    window.openChat = () => {
+      chatWindow.classList.toggle("open");
+    };
+    window.closeChat = () => {
+      chatWindow.classList.remove("open");
+    };
+    
+    chatBtn.addEventListener("click", () => chatWindow.classList.toggle("open"));
+    closeChat.addEventListener("click", () => chatWindow.classList.remove("open"));
+    sendChat.addEventListener("click", () => {
+      if (chatInput.value.trim()) {
+        sendToBot(chatInput.value);
+        chatInput.value = "";
+      }
+    });
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendChat.click();
+    });
+  }
+  
+  init();
+</script>
+</body>
+</html>
